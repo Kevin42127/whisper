@@ -66,7 +66,18 @@ function App() {
       <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
       <Announcement isVisible={showAnnouncement} onClose={() => setShowAnnouncement(false)} />
       <footer className="app-footer">
-        <p>© Whisper</p>
+        <div className="footer-content">
+          <p>© Whisper</p>
+          <a 
+            href="https://forms.gle/eRY3UfV51Gh1523n6" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="feedback-link"
+          >
+            <span className="material-icons">feedback</span>
+            回饋表單
+          </a>
+        </div>
       </footer>
     </div>
   )
