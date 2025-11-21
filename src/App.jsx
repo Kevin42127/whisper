@@ -4,6 +4,7 @@ import PostList from './components/PostList'
 import AdminLogin from './components/AdminLogin'
 import ToastContainer from './components/ToastContainer'
 import Announcement from './components/Announcement'
+import ReportList from './components/ReportList'
 import useToast from './hooks/useToast'
 import { db, auth } from './config/firebase'
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
@@ -13,6 +14,7 @@ function App() {
   const [posts, setPosts] = useState([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [showAnnouncement, setShowAnnouncement] = useState(false)
+  const [showReports, setShowReports] = useState(false)
   const toast = useToast()
 
   useEffect(() => {
@@ -56,12 +58,22 @@ function App() {
           >
             <span className="material-icons">notifications</span>
           </button>
-          <AdminLogin isLoggedIn={isAdmin} toast={toast} />
+          <AdminLogin 
+            isLoggedIn={isAdmin} 
+            toast={toast} 
+            onShowReports={() => setShowReports(!showReports)}
+          />
         </div>
       </header>
       <main className="app-main">
-        <PostForm toast={toast} />
-        <PostList posts={posts} isAdmin={isAdmin} toast={toast} />
+        {!showReports ? (
+          <>
+            <PostForm toast={toast} />
+            <PostList posts={posts} isAdmin={isAdmin} toast={toast} />
+          </>
+        ) : (
+          <ReportList toast={toast} onBack={() => setShowReports(false)} />
+        )}
       </main>
       <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
       <Announcement isVisible={showAnnouncement} onClose={() => setShowAnnouncement(false)} />

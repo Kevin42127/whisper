@@ -11,7 +11,21 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 }
 
-const app = initializeApp(firebaseConfig)
-export const db = getFirestore(app)
-export const auth = getAuth(app)
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error('Firebase 配置缺失！請檢查環境變數設定。')
+}
+
+let app
+let db
+let auth
+
+try {
+  app = initializeApp(firebaseConfig)
+  db = getFirestore(app)
+  auth = getAuth(app)
+} catch (error) {
+  console.error('Firebase 初始化失敗:', error)
+}
+
+export { db, auth }
 

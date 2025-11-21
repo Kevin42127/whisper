@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { doc, deleteDoc } from 'firebase/firestore'
+import { doc, deleteDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import DeleteConfirm from './DeleteConfirm'
+import ReportConfirm from './ReportConfirm'
 
 function PostItem({ post, isAdmin, toast }) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showReportConfirm, setShowReportConfirm] = useState(false)
+  const [isReporting, setIsReporting] = useState(false)
 
   const formatDate = (timestamp) => {
     if (!timestamp) return ''
@@ -53,6 +56,34 @@ function PostItem({ post, isAdmin, toast }) {
     setShowDeleteConfirm(false)
   }
 
+  const handleReportClick = () => {
+    setShowReportConfirm(true)
+  }
+
+  const handleConfirmReport = async () => {
+    setIsReporting(true)
+    try {
+      await addDoc(collection(db, 'reports'), {
+        postId: post.id,
+        postContent: post.content,
+        createdAt: serverTimestamp(),
+        reportedAt: serverTimestamp(),
+        status: 'pending'
+      })
+      toast.success('檢舉已送出，管理員會盡快處理')
+      setShowReportConfirm(false)
+    } catch (error) {
+      console.error('檢舉失敗:', error)
+      toast.error('檢舉失敗，請稍後再試')
+    } finally {
+      setIsReporting(false)
+    }
+  }
+
+  const handleCancelReport = () => {
+    setShowReportConfirm(false)
+  }
+
   return (
     <article className="post-item">
       <div className="post-header">
@@ -61,6 +92,15 @@ function PostItem({ post, isAdmin, toast }) {
             <span className="material-icons">schedule</span>
             {formatDate(post.createdAt)}
           </time>
+          {!isAdmin && (
+            <button
+              className="post-report"
+              onClick={handleReportClick}
+              title="檢舉此留言"
+            >
+              <span className="material-icons">report</span>
+            </button>
+          )}
           {isAdmin && (
             <button
               className="post-delete"
@@ -79,6 +119,12 @@ function PostItem({ post, isAdmin, toast }) {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         isDeleting={isDeleting}
+      />
+      <ReportConfirm
+        isVisible={showReportConfirm}
+        onConfirm={handleConfirmReport}
+        onCancel={handleCancelReport}
+        isReporting={isReporting}
       />
     </article>
   )
