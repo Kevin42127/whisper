@@ -48,8 +48,10 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1 className="brand-logo">Whisper</h1>
-        <p className="app-subtitle">匿名發言，自由表達</p>
+        <div className="brand-block">
+          <h1 className="brand-logo">Whisper</h1>
+          <p className="app-subtitle">匿名發言，自由表達</p>
+        </div>
         <div className="header-actions">
           <button 
             className="announcement-bell" 
@@ -61,18 +63,15 @@ function App() {
           <AdminLogin 
             isLoggedIn={isAdmin} 
             toast={toast} 
-            onShowReports={() => setShowReports(!showReports)}
+            onShowReports={() => setShowReports((prev) => !prev)}
           />
         </div>
       </header>
       <main className="app-main">
-        {!showReports ? (
-          <>
-            <PostForm toast={toast} />
-            <PostList posts={posts} isAdmin={isAdmin} toast={toast} />
-          </>
+        {showReports ? (
+          <ReportsSection isAdmin={isAdmin} toast={toast} onClose={() => setShowReports(false)} />
         ) : (
-          <ReportList toast={toast} onBack={() => setShowReports(false)} />
+          <HomeSection posts={posts} isAdmin={isAdmin} toast={toast} />
         )}
       </main>
       <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
@@ -80,18 +79,58 @@ function App() {
       <footer className="app-footer">
         <div className="footer-content">
           <p>© Whisper</p>
-          <a 
-            href="https://forms.gle/eRY3UfV51Gh1523n6" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="feedback-link"
-          >
-            <span className="material-icons">feedback</span>
-            回饋表單
-          </a>
         </div>
       </footer>
+      <a 
+        href="https://forms.gle/eRY3UfV51Gh1523n6" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="feedback-fab"
+        title="回饋表單"
+      >
+        <span className="material-icons">feedback</span>
+      </a>
     </div>
+  )
+}
+function HomeSection({ posts, isAdmin, toast }) {
+  return (
+    <>
+      <section id="compose-form" className="compose-section">
+        <div className="compose-card">
+          {isAdmin && (
+            <div className="compose-note">
+              <span className="material-icons">info</span>
+              管理員發文依然保持匿名，但請謹慎使用。
+            </div>
+          )}
+          <PostForm toast={toast} />
+        </div>
+      </section>
+      <section id="latest-posts" className="posts-preview">
+        <PostList posts={posts} isAdmin={isAdmin} toast={toast} />
+      </section>
+    </>
+  )
+}
+
+function ReportsSection({ isAdmin, toast, onClose }) {
+  if (!isAdmin) {
+    return (
+      <div className="guard-card">
+        <span className="material-icons">lock</span>
+        <p>僅限管理員檢視檢舉記錄</p>
+        <button className="cta-primary" onClick={onClose}>
+          返回首頁
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <section className="reports-page">
+      <ReportList toast={toast} onBack={onClose} />
+    </section>
   )
 }
 
