@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { doc, deleteDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, deleteDoc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import DeleteConfirm from './DeleteConfirm'
 import ReportConfirm from './ReportConfirm'
@@ -9,6 +9,7 @@ function PostItem({ post, isAdmin, toast }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showReportConfirm, setShowReportConfirm] = useState(false)
   const [isReporting, setIsReporting] = useState(false)
+  const [isPinning, setIsPinning] = useState(false)
 
   const formatDate = (timestamp) => {
     if (!timestamp) return ''
@@ -84,9 +85,37 @@ function PostItem({ post, isAdmin, toast }) {
     setShowReportConfirm(false)
   }
 
+  const handlePinToggle = async () => {
+    setIsPinning(true)
+    try {
+      await updateDoc(doc(db, 'posts', post.id), {
+        pinned: !post.pinned
+      })
+      toast.success(post.pinned ? '已取消釘選' : '已釘選')
+    } catch (error) {
+      console.error('釘選失敗:', error)
+      toast.error('釘選失敗，請稍後再試')
+    } finally {
+      setIsPinning(false)
+    }
+  }
+
   return (
-    <article className="post-item">
+    <article className={`post-item ${post.pinned ? 'post-item-pinned' : ''}`}>
+      {post.pinned && (
+        <div className="post-pinned-badge">
+          <span className="material-icons">push_pin</span>
+          <span>已釘選</span>
+        </div>
+      )}
       <div className="post-header">
+        <div className="post-header-left">
+          {post.isAdmin && (
+            <div className="post-admin-badge">
+              <span>管理員</span>
+            </div>
+          )}
+        </div>
         <div className="post-header-right">
           <time className="post-time">
             <span className="material-icons">schedule</span>
@@ -102,14 +131,24 @@ function PostItem({ post, isAdmin, toast }) {
             </button>
           )}
           {isAdmin && (
-            <button
-              className="post-delete"
-              onClick={handleDeleteClick}
-              disabled={isDeleting}
-              title="刪除此留言"
-            >
-              <span className="material-icons">delete</span>
-            </button>
+            <>
+              <button
+                className={`post-pin ${post.pinned ? 'post-pin-active' : ''}`}
+                onClick={handlePinToggle}
+                disabled={isPinning}
+                title={post.pinned ? '取消釘選' : '釘選此留言'}
+              >
+                <span className="material-icons">push_pin</span>
+              </button>
+              <button
+                className="post-delete"
+                onClick={handleDeleteClick}
+                disabled={isDeleting}
+                title="刪除此留言"
+              >
+                <span className="material-icons">delete</span>
+              </button>
+            </>
           )}
         </div>
       </div>

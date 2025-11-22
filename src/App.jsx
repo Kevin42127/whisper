@@ -39,7 +39,14 @@ function App() {
         id: doc.id,
         ...doc.data()
       }))
-      setPosts(postsData)
+      const sortedPosts = postsData.sort((a, b) => {
+        const aPinned = a.pinned || false
+        const bPinned = b.pinned || false
+        if (aPinned && !bPinned) return -1
+        if (!aPinned && bPinned) return 1
+        return 0
+      })
+      setPosts(sortedPosts)
     })
 
     return () => unsubscribe()
@@ -104,7 +111,7 @@ function HomeSection({ posts, isAdmin, toast }) {
               管理員發文依然保持匿名，但請謹慎使用。
             </div>
           )}
-          <PostForm toast={toast} />
+          <PostForm toast={toast} isAdmin={isAdmin} />
         </div>
       </section>
       <section id="latest-posts" className="posts-preview">

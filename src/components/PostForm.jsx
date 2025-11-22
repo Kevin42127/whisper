@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../config/firebase'
 
-function PostForm({ toast }) {
+function PostForm({ toast, isAdmin }) {
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -18,7 +18,8 @@ function PostForm({ toast }) {
     try {
       await addDoc(collection(db, 'posts'), {
         content: content.trim(),
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        isAdmin: isAdmin || false
       })
       
       setContent('')
@@ -31,14 +32,30 @@ function PostForm({ toast }) {
     }
   }
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      if (content.trim() && !isSubmitting) {
+        handleSubmit(e)
+      }
+    }
+  }
+
   return (
     <form className="post-form" onSubmit={handleSubmit}>
+      {isAdmin ? (
+        <div className="admin-badge">
+          <span className="material-icons">admin_panel_settings</span>
+          <span>管理員模式</span>
+        </div>
+      ) : null}
       <div className="form-group">
         <textarea
           className="form-textarea"
           placeholder="輸入你的想法..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          onKeyDown={handleKeyDown}
           rows="6"
           disabled={isSubmitting}
         />
