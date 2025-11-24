@@ -191,7 +191,7 @@ function HomeSection({ posts, isAdmin, toast, searchTerm }) {
     <>
       <div className="maintenance-banner">
         <span className="material-icons">campaign</span>
-        <p>目前資料持久化遇到一些問題，我們正在處理，大家可先到匿名配對去遊玩。</p>
+        <p>目前資料持久化遇到一些問題，我們正在處理；修復期間仍可匿名發言。</p>
       </div>
       <section id="compose-form" className="compose-section">
         <div className="compose-card">

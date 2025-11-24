@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   cancelMatchQueue,
   getMatchSessionId,
@@ -20,11 +20,24 @@ function AnonymousMatchPage({ toast, onBack }) {
   const [isJoining, setIsJoining] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false)
+  const matchSoundPlayedRef = useRef(false)
+  const audioRef = useRef(null)
 
   const isWaiting = ticket.status === 'waiting' && !ticket.roomId
   const isMatched = ticket.status === 'matched' && !!ticket.roomId
   const partnerLeft = !!room && room.active === false
   const canChat = isMatched && !partnerLeft
+
+  useEffect(() => {
+    audioRef.current = new Audio('/notification.wav')
+    audioRef.current.volume = 0.6
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const id = getMatchSessionId()
@@ -51,6 +64,21 @@ function AnonymousMatchPage({ toast, onBack }) {
       stopMessages()
     }
   }, [ticket.roomId])
+
+  useEffect(() => {
+    if (isMatched && !partnerLeft && !matchSoundPlayedRef.current) {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0
+        audioRef.current.play().catch((error) => {
+          console.warn('播放配對提示音失敗', error)
+        })
+      }
+      matchSoundPlayedRef.current = true
+    }
+    if (!isMatched) {
+      matchSoundPlayedRef.current = false
+    }
+  }, [isMatched, partnerLeft])
 
   const stateTitle = useMemo(() => {
     if (isMatched) {
