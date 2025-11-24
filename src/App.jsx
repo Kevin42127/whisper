@@ -10,6 +10,8 @@ import PostManagement from './components/PostManagement'
 import AdminDashboard from './components/AdminDashboard'
 import SearchBar from './components/SearchBar'
 import UserSettings from './components/UserSettings'
+import AnonymousMatchPage from './components/AnonymousMatchPage'
+import ScrollProgress from './components/ScrollProgress'
 import useToast from './hooks/useToast'
 import { db, auth } from './config/firebase'
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
@@ -22,6 +24,7 @@ function App() {
   const [adminPage, setAdminPage] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [isMobile, setIsMobile] = useState(false)
+  const [activePage, setActivePage] = useState('home')
   const toast = useToast()
 
   useEffect(() => {
@@ -47,6 +50,7 @@ function App() {
       const adminStatus = !!user
       setIsAdmin(adminStatus)
       if (adminStatus) {
+        setActivePage('home')
         setAdminPage('dashboard')
       } else {
         setAdminPage(null)
@@ -78,12 +82,28 @@ function App() {
 
   return (
     <div className="app">
+      <ScrollProgress />
       <header className="app-header">
         <div className="brand-block">
           <h1 className="brand-logo">Whisper</h1>
           <p className="app-subtitle">匿名發言，自由表達</p>
         </div>
         <div className="header-actions">
+          <button
+            className={`match-toggle ${activePage === 'match' ? 'active' : ''}`}
+            onClick={() => {
+              const nextPage = activePage === 'match' ? 'home' : 'match'
+              if (nextPage === 'match') {
+                setAdminPage(null)
+              }
+              setActivePage(nextPage)
+            }}
+          >
+            <span className="material-icons">
+              {activePage === 'match' ? 'home' : 'forum'}
+            </span>
+            {activePage === 'match' ? '返回首頁' : '匿名配對'}
+          </button>
           <UserSettings />
           <button 
             className="announcement-bell" 
@@ -96,12 +116,15 @@ function App() {
             <AdminLogin 
               isLoggedIn={isAdmin} 
               toast={toast} 
-              onShowAdmin={() => setAdminPage('dashboard')}
+              onShowAdmin={() => {
+                setActivePage('home')
+                setAdminPage('dashboard')
+              }}
             />
           )}
         </div>
       </header>
-      {!adminPage && (
+      {!adminPage && activePage === 'home' && (
         <div className="search-section">
           <SearchBar onSearch={setSearchTerm} />
         </div>
@@ -130,8 +153,18 @@ function App() {
             toast={toast} 
             onClose={() => setAdminPage('dashboard')} 
           />
+        ) : activePage === 'match' ? (
+          <AnonymousMatchPage
+            toast={toast}
+            onBack={() => setActivePage('home')}
+          />
         ) : (
-          <HomeSection posts={posts} isAdmin={isAdmin} toast={toast} searchTerm={searchTerm} />
+          <HomeSection
+            posts={posts}
+            isAdmin={isAdmin}
+            toast={toast}
+            searchTerm={searchTerm}
+          />
         )}
       </main>
       <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
