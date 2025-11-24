@@ -2452,32 +2452,6 @@ body {
   color: #ffffff;
 }
 
-.scroll-to-top {
-  position: fixed;
-  bottom: 5rem;
-  right: 1.5rem;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: var(--brand-primary);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  transition: var(--transition);
-  z-index: 100;
-}
-
-.scroll-to-top:hover {
-  background-color: var(--brand-secondary);
-}
-
-.scroll-to-top .material-icons {
-  font-size: 1.5rem;
-}
 
 [data-font-size="small"] {
   font-size: 0.875rem;
@@ -2629,16 +2603,6 @@ body {
     padding: 1.25rem;
   }
 
-  .scroll-to-top {
-    bottom: 4.5rem;
-    right: 1rem;
-    width: 44px;
-    height: 44px;
-  }
-
-  .scroll-to-top .material-icons {
-    font-size: 1.25rem;
-  }
 }
 
 @media (max-width: 480px) {
@@ -2651,16 +2615,6 @@ body {
     margin: 0.5rem;
   }
 
-  .scroll-to-top {
-    bottom: 4rem;
-    right: 0.75rem;
-    width: 40px;
-    height: 40px;
-  }
-
-  .scroll-to-top .material-icons {
-    font-size: 1.125rem;
-  }
 }
 
 .announcement-edit-btn {

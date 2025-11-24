@@ -10,7 +10,6 @@ import PostManagement from './components/PostManagement'
 import AdminDashboard from './components/AdminDashboard'
 import SearchBar from './components/SearchBar'
 import UserSettings from './components/UserSettings'
-import ScrollToTop from './components/ScrollToTop'
 import useToast from './hooks/useToast'
 import { db, auth } from './config/firebase'
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
@@ -142,7 +141,6 @@ function App() {
           <p>© Whisper</p>
         </div>
       </footer>
-      <ScrollToTop />
       <a 
         href="https://forms.gle/eRY3UfV51Gh1523n6" 
         target="_blank" 
