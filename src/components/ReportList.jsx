@@ -5,24 +5,22 @@ import DeleteConfirm from './DeleteConfirm'
 
 function ReportList({ toast, onBack }) {
   const [reports, setReports] = useState([])
+  const [allReports, setAllReports] = useState([])
   const [filter, setFilter] = useState('pending')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [selectedReport, setSelectedReport] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
-    let q
-    if (filter === 'all') {
-      q = query(collection(db, 'reports'), orderBy('reportedAt', 'desc'))
-    } else {
-      q = query(collection(db, 'reports'), orderBy('reportedAt', 'desc'))
-    }
+    const q = query(collection(db, 'reports'), orderBy('reportedAt', 'desc'))
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const reportsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }))
+      
+      setAllReports(reportsData)
       
       const filtered = filter === 'all' 
         ? reportsData 
@@ -33,6 +31,10 @@ function ReportList({ toast, onBack }) {
 
     return () => unsubscribe()
   }, [filter])
+
+  const pendingCount = allReports.filter(r => r.status === 'pending').length
+  const resolvedCount = allReports.filter(r => r.status === 'resolved').length
+  const totalCount = allReports.length
 
   const handleDeleteClick = (report) => {
     setSelectedReport(report)
@@ -101,31 +103,76 @@ function ReportList({ toast, onBack }) {
 
   return (
     <div className="report-list-container">
-      {onBack && (
-        <button className="report-back-button" onClick={onBack}>
-          <span className="material-icons">arrow_back</span>
-          返回主頁
-        </button>
-      )}
-      <div className="report-list-filters">
-        <button
-          className={`report-filter ${filter === 'pending' ? 'active' : ''}`}
-          onClick={() => setFilter('pending')}
-        >
-          待處理
-        </button>
-        <button
-          className={`report-filter ${filter === 'resolved' ? 'active' : ''}`}
-          onClick={() => setFilter('resolved')}
-        >
-          已處理
-        </button>
-        <button
-          className={`report-filter ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          全部
-        </button>
+      <div className="admin-nav">
+        <div className="admin-nav-header">
+          {onBack && (
+            <button className="admin-nav-back" onClick={onBack}>
+              <span className="material-icons">arrow_back</span>
+              <span>返回後台</span>
+            </button>
+          )}
+          <div className="admin-nav-title">
+            <span className="material-icons">admin_panel_settings</span>
+            <h2>檢舉管理</h2>
+          </div>
+        </div>
+        
+        <div className="admin-nav-stats">
+          <div className="admin-stat-card">
+            <div className="admin-stat-icon pending">
+              <span className="material-icons">pending</span>
+            </div>
+            <div className="admin-stat-content">
+              <div className="admin-stat-value">{pendingCount}</div>
+              <div className="admin-stat-label">待處理</div>
+            </div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-icon resolved">
+              <span className="material-icons">check_circle</span>
+            </div>
+            <div className="admin-stat-content">
+              <div className="admin-stat-value">{resolvedCount}</div>
+              <div className="admin-stat-label">已處理</div>
+            </div>
+          </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-icon total">
+              <span className="material-icons">list</span>
+            </div>
+            <div className="admin-stat-content">
+              <div className="admin-stat-value">{totalCount}</div>
+              <div className="admin-stat-label">總計</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="admin-nav-filters">
+          <button
+            className={`admin-filter-btn ${filter === 'pending' ? 'active' : ''}`}
+            onClick={() => setFilter('pending')}
+          >
+            <span className="material-icons">pending</span>
+            <span>待處理</span>
+            {pendingCount > 0 && (
+              <span className="admin-filter-badge">{pendingCount}</span>
+            )}
+          </button>
+          <button
+            className={`admin-filter-btn ${filter === 'resolved' ? 'active' : ''}`}
+            onClick={() => setFilter('resolved')}
+          >
+            <span className="material-icons">check_circle</span>
+            <span>已處理</span>
+          </button>
+          <button
+            className={`admin-filter-btn ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => setFilter('all')}
+          >
+            <span className="material-icons">list</span>
+            <span>全部</span>
+          </button>
+        </div>
       </div>
       <div className="report-list">
         {reports.map(report => (

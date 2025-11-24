@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { auth } from '../config/firebase'
 
-function AdminLogin({ isLoggedIn, toast, onShowReports }) {
+function AdminLogin({ isLoggedIn, toast, onShowAdmin }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -50,19 +50,9 @@ function AdminLogin({ isLoggedIn, toast, onShowReports }) {
   if (isLoggedIn) {
     return (
       <div className="admin-panel">
-        {onShowReports && (
-          <button 
-            className="admin-reports" 
-            onClick={onShowReports}
-            title="檢舉管理"
-          >
-            <span className="material-icons">report</span>
-            檢舉管理
-          </button>
-        )}
         <button className="admin-logout" onClick={handleLogout}>
           <span className="material-icons">logout</span>
-          登出
+          <span>登出</span>
         </button>
       </div>
     )

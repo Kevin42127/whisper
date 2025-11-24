@@ -4,7 +4,13 @@ import PostList from './components/PostList'
 import AdminLogin from './components/AdminLogin'
 import ToastContainer from './components/ToastContainer'
 import Announcement from './components/Announcement'
+import AnnouncementEditor from './components/AnnouncementEditor'
 import ReportList from './components/ReportList'
+import PostManagement from './components/PostManagement'
+import AdminDashboard from './components/AdminDashboard'
+import SearchBar from './components/SearchBar'
+import UserSettings from './components/UserSettings'
+import ScrollToTop from './components/ScrollToTop'
 import useToast from './hooks/useToast'
 import { db, auth } from './config/firebase'
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
@@ -14,8 +20,21 @@ function App() {
   const [posts, setPosts] = useState([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [showAnnouncement, setShowAnnouncement] = useState(false)
-  const [showReports, setShowReports] = useState(false)
+  const [adminPage, setAdminPage] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
   const toast = useToast()
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     const hasSeenAnnouncement = localStorage.getItem('hasSeenAnnouncement')
@@ -26,7 +45,13 @@ function App() {
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      setIsAdmin(!!user)
+      const adminStatus = !!user
+      setIsAdmin(adminStatus)
+      if (adminStatus) {
+        setAdminPage('dashboard')
+      } else {
+        setAdminPage(null)
+      }
     })
 
     return () => unsubscribeAuth()
@@ -60,6 +85,7 @@ function App() {
           <p className="app-subtitle">匿名發言，自由表達</p>
         </div>
         <div className="header-actions">
+          <UserSettings />
           <button 
             className="announcement-bell" 
             onClick={() => setShowAnnouncement(true)}
@@ -67,18 +93,46 @@ function App() {
           >
             <span className="material-icons">notifications</span>
           </button>
-          <AdminLogin 
-            isLoggedIn={isAdmin} 
-            toast={toast} 
-            onShowReports={() => setShowReports((prev) => !prev)}
-          />
+          {!isMobile && (
+            <AdminLogin 
+              isLoggedIn={isAdmin} 
+              toast={toast} 
+              onShowAdmin={() => setAdminPage('dashboard')}
+            />
+          )}
         </div>
       </header>
+      {!adminPage && (
+        <div className="search-section">
+          <SearchBar onSearch={setSearchTerm} />
+        </div>
+      )}
       <main className="app-main">
-        {showReports ? (
-          <ReportsSection isAdmin={isAdmin} toast={toast} onClose={() => setShowReports(false)} />
+        {adminPage === 'dashboard' ? (
+          <AdminDashboardSection 
+            isAdmin={isAdmin} 
+            onNavigate={(page) => setAdminPage(page)} 
+            onClose={() => setAdminPage(null)}
+          />
+        ) : adminPage === 'announcement' ? (
+          <AnnouncementEditorSection 
+            toast={toast} 
+            onClose={() => setAdminPage('dashboard')} 
+          />
+        ) : adminPage === 'reports' ? (
+          <ReportsSection 
+            isAdmin={isAdmin} 
+            toast={toast} 
+            onClose={() => setAdminPage('dashboard')} 
+          />
+        ) : adminPage === 'posts' ? (
+          <PostManagementSection 
+            isAdmin={isAdmin} 
+            toast={toast} 
+            onClose={() => setAdminPage('dashboard')} 
+          />
         ) : (
-          <HomeSection posts={posts} isAdmin={isAdmin} toast={toast} />
+          <HomeSection posts={posts} isAdmin={isAdmin} toast={toast} searchTerm={searchTerm} />
         )}
       </main>
       <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
@@ -88,6 +142,7 @@ function App() {
           <p>© Whisper</p>
         </div>
       </footer>
+      <ScrollToTop />
       <a 
         href="https://forms.gle/eRY3UfV51Gh1523n6" 
         target="_blank" 
@@ -100,7 +155,7 @@ function App() {
     </div>
   )
 }
-function HomeSection({ posts, isAdmin, toast }) {
+function HomeSection({ posts, isAdmin, toast, searchTerm }) {
   return (
     <>
       <section id="compose-form" className="compose-section">
@@ -115,9 +170,29 @@ function HomeSection({ posts, isAdmin, toast }) {
         </div>
       </section>
       <section id="latest-posts" className="posts-preview">
-        <PostList posts={posts} isAdmin={isAdmin} toast={toast} />
+        <PostList posts={posts} isAdmin={isAdmin} toast={toast} searchTerm={searchTerm} />
       </section>
     </>
+  )
+}
+
+function AdminDashboardSection({ isAdmin, onNavigate, onClose }) {
+  if (!isAdmin) {
+    return (
+      <div className="guard-card">
+        <span className="material-icons">lock</span>
+        <p>僅限管理員使用</p>
+        <button className="cta-primary" onClick={onClose}>
+          返回首頁
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <section className="admin-dashboard-page">
+      <AdminDashboard onNavigate={onNavigate} />
+    </section>
   )
 }
 
@@ -128,7 +203,7 @@ function ReportsSection({ isAdmin, toast, onClose }) {
         <span className="material-icons">lock</span>
         <p>僅限管理員檢視檢舉記錄</p>
         <button className="cta-primary" onClick={onClose}>
-          返回首頁
+          返回後台
         </button>
       </div>
     )
@@ -137,6 +212,34 @@ function ReportsSection({ isAdmin, toast, onClose }) {
   return (
     <section className="reports-page">
       <ReportList toast={toast} onBack={onClose} />
+    </section>
+  )
+}
+
+function AnnouncementEditorSection({ toast, onClose }) {
+  return (
+    <section className="announcement-editor-page">
+      <AnnouncementEditor toast={toast} onClose={onClose} />
+    </section>
+  )
+}
+
+function PostManagementSection({ isAdmin, toast, onClose }) {
+  if (!isAdmin) {
+    return (
+      <div className="guard-card">
+        <span className="material-icons">lock</span>
+        <p>僅限管理員使用</p>
+        <button className="cta-primary" onClick={onClose}>
+          返回後台
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <section className="post-management-page">
+      <PostManagement toast={toast} onBack={onClose} />
     </section>
   )
 }
