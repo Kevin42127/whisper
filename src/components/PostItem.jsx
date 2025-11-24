@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { doc, deleteDoc, updateDoc, collection, addDoc, serverTimestamp, increment } from 'firebase/firestore'
+import { useState } from 'react'
+import { doc, deleteDoc, updateDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../config/firebase'
 import DeleteConfirm from './DeleteConfirm'
 import ReportConfirm from './ReportConfirm'
@@ -10,14 +10,6 @@ function PostItem({ post, isAdmin, toast, searchTerm = '' }) {
   const [showReportConfirm, setShowReportConfirm] = useState(false)
   const [isReporting, setIsReporting] = useState(false)
   const [isPinning, setIsPinning] = useState(false)
-  const [likesCount, setLikesCount] = useState(post.likes || 0)
-  const [likeAnimation, setLikeAnimation] = useState(false)
-
-  // 更新點讚數（從 Firestore 同步）
-  useEffect(() => {
-    const firestoreLikes = post.likes !== undefined ? post.likes : 0
-    setLikesCount(firestoreLikes)
-  }, [post.likes, post.id])
 
   const formatDate = (timestamp) => {
     if (!timestamp) return ''
@@ -108,33 +100,6 @@ function PostItem({ post, isAdmin, toast, searchTerm = '' }) {
     }
   }
 
-  const handleLikeToggle = async () => {
-    setLikeAnimation(true)
-    
-    // 保存當前點讚數用於錯誤回滾
-    const currentCount = likesCount || 0
-    const newCount = currentCount + 1
-    
-    // 樂觀更新本地狀態（每次點擊都增加）
-    setLikesCount(newCount)
-
-    try {
-      // 更新 Firestore（每次點擊都增加1）
-      await updateDoc(doc(db, 'posts', post.id), {
-        likes: increment(1)
-      })
-
-      // 觸發動畫
-      setTimeout(() => setLikeAnimation(false), 600)
-    } catch (error) {
-      console.error('點讚失敗:', error)
-      toast.error('點讚失敗，請稍後再試')
-      // 回滾本地狀態
-      setLikesCount(currentCount)
-      setLikeAnimation(false)
-    }
-  }
-
   const highlightText = (text, term) => {
     if (!term || !term.trim()) {
       return text
@@ -205,16 +170,6 @@ function PostItem({ post, isAdmin, toast, searchTerm = '' }) {
         </div>
       </div>
       <div className="post-content">{highlightText(post.content, searchTerm)}</div>
-      <div className="post-footer">
-        <button
-          className={`post-like ${likeAnimation ? 'post-like-animate' : ''}`}
-          onClick={handleLikeToggle}
-          title="點讚"
-        >
-          <span className="material-icons">favorite</span>
-          <span className="post-like-count">{likesCount}</span>
-        </button>
-      </div>
       <DeleteConfirm
         isVisible={showDeleteConfirm}
         onConfirm={handleConfirmDelete}

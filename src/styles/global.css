@@ -1239,7 +1239,7 @@ body {
 
   .admin-stat-label {
     font-size: 0.8125rem;
-  }
+}
 
   .compose-card,
   .post-form {
@@ -1740,6 +1740,30 @@ body {
 
 .feedback-fab:hover {
   background-color: var(--brand-secondary);
+}
+
+.maintenance-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  color: var(--brand-primary);
+}
+
+.maintenance-banner .material-icons {
+  font-size: 1.5rem;
+}
+
+.maintenance-banner p {
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.6;
+  text-align: center;
 }
 
 .report-confirm-overlay {
