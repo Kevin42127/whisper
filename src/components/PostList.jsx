@@ -1,15 +1,21 @@
 import { useMemo } from 'react'
 import PostItem from './PostItem'
 
+const MAX_POSTS = 12
+
 function PostList({ posts, isAdmin, toast, searchTerm = '' }) {
   const hasSearch = searchTerm.trim().length > 0
 
   const filteredPosts = useMemo(() => {
-    if (!hasSearch) {
-      return posts
+    let result = posts
+    if (hasSearch) {
+      const term = searchTerm.toLowerCase()
+      result = posts.filter(post => post.content.toLowerCase().includes(term))
     }
-    const term = searchTerm.toLowerCase()
-    return posts.filter(post => post.content.toLowerCase().includes(term))
+    if (!hasSearch && result.length > MAX_POSTS) {
+      return result.slice(0, MAX_POSTS)
+    }
+    return result
   }, [posts, hasSearch, searchTerm])
 
   if (posts.length === 0) {
@@ -46,6 +52,11 @@ function PostList({ posts, isAdmin, toast, searchTerm = '' }) {
       {hasSearch && filteredPosts.length > 0 && (
         <div className="search-results-info">
           <p>找到 {filteredPosts.length} 則符合的留言</p>
+        </div>
+      )}
+      {!hasSearch && posts.length > MAX_POSTS && (
+        <div className="post-list-info">
+          <p>顯示最新 {MAX_POSTS} 則留言（共 {posts.length} 則）</p>
         </div>
       )}
     </>

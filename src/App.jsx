@@ -191,7 +191,7 @@ function HomeSection({ posts, isAdmin, toast, searchTerm }) {
     <>
       <div className="maintenance-banner">
         <span className="material-icons">campaign</span>
-        <p>目前資料持久化遇到一些問題，我們正在處理；修復期間仍可匿名發言。</p>
+        <p>目前發言卡片上限為12則，超過上限後會自動刷新顯示最新留言。</p>
       </div>
       <section id="compose-form" className="compose-section">
         <div className="compose-card">
