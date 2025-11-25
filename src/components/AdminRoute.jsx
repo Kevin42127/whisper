@@ -8,13 +8,7 @@ function AdminRoute({ children }) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      let authenticated = await isAdminLoggedIn()
-      
-      if (!authenticated) {
-        await new Promise(resolve => setTimeout(resolve, 300))
-        authenticated = await isAdminLoggedIn()
-      }
-      
+      const authenticated = await isAdminLoggedIn()
       setIsAuthenticated(authenticated)
       setIsChecking(false)
     }

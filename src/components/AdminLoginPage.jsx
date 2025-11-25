@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { loginAdmin, isAdminLoggedIn, verifyAccessKey, getAdminSession } from '../utils/adminAuth'
+import { loginAdmin, isAdminLoggedIn, verifyAccessKey } from '../utils/adminAuth'
 
 function AdminLoginPage({ toast, onLoginSuccess }) {
   const [email, setEmail] = useState('')
@@ -19,28 +19,21 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
       const loggedIn = await isAdminLoggedIn()
       if (loggedIn) {
         setIsLoggedIn(true)
+        setIsCheckingAccess(false)
         navigate('/admin/dashboard', { replace: true })
         return
       }
 
       const accessKey = searchParams.get('access')
       if (!accessKey) {
-        const session = getAdminSession()
-        if (session && session.token) {
-          await new Promise(resolve => setTimeout(resolve, 500))
-          const retryLoggedIn = await isAdminLoggedIn()
-          if (retryLoggedIn) {
-            setIsLoggedIn(true)
-            navigate('/admin/dashboard', { replace: true })
-            return
-          }
-        }
+        setIsCheckingAccess(false)
         navigate('/', { replace: true })
         return
       }
 
       const isValidAccess = await verifyAccessKey(accessKey)
       if (!isValidAccess) {
+        setIsCheckingAccess(false)
         navigate('/', { replace: true })
         return
       }
@@ -71,13 +64,13 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
         setEmail('')
         setPassword('')
         setIsLoggedIn(true)
+        setIsCheckingAccess(false)
         if (toast) {
           toast.success('管理員登入成功')
         }
         if (onLoginSuccess) {
           onLoginSuccess()
         }
-        await new Promise(resolve => setTimeout(resolve, 100))
         navigate('/admin/dashboard', { replace: true })
       } else {
         setError('帳號或密碼錯誤')

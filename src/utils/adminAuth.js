@@ -105,6 +105,7 @@ export async function isAdminLoggedIn() {
     })
 
     if (!response.ok) {
+      clearAdminSession()
       return false
     }
 
@@ -118,6 +119,7 @@ export async function isAdminLoggedIn() {
     return true
   } catch (error) {
     console.error('驗證 session 失敗:', error)
+    clearAdminSession()
     return false
   }
 }
