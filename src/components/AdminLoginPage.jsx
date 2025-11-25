@@ -52,7 +52,7 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
       
       if (!accessKey) {
         setError('訪問密鑰無效')
-        navigate('/', { replace: true })
+        setIsLoading(false)
         return
       }
 
