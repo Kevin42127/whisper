@@ -51,13 +51,13 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const checkAdminStatus = () => {
-      const adminStatus = isAdminLoggedIn()
+    const checkAdminStatus = async () => {
+      const adminStatus = await isAdminLoggedIn()
       setIsAdmin(adminStatus)
     }
 
     checkAdminStatus()
-    const interval = setInterval(checkAdminStatus, 1000)
+    const interval = setInterval(checkAdminStatus, 60000)
 
     return () => clearInterval(interval)
   }, [])

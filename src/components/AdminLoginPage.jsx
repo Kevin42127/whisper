@@ -1,26 +1,33 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { verifyAdmin, setAdminSession, isAdminLoggedIn, verifyAccessKey } from '../utils/adminAuth'
+import { loginAdmin, isAdminLoggedIn, verifyAccessKey } from '../utils/adminAuth'
 
 function AdminLoginPage({ toast, onLoginSuccess }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    if (isAdminLoggedIn()) {
-      navigate('/admin/dashboard', { replace: true })
-      return
+    const checkAccess = async () => {
+      if (await isAdminLoggedIn()) {
+        navigate('/admin/dashboard', { replace: true })
+        return
+      }
+
+      const accessKey = searchParams.get('access')
+      if (!accessKey || !(await verifyAccessKey(accessKey))) {
+        navigate('/', { replace: true })
+        return
+      }
+
+      setIsCheckingAccess(false)
     }
 
-    const accessKey = searchParams.get('access')
-    if (!accessKey || !verifyAccessKey(accessKey)) {
-      navigate('/', { replace: true })
-      return
-    }
+    checkAccess()
   }, [navigate, searchParams])
 
   const handleSubmit = async (e) => {
@@ -29,8 +36,17 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
     setIsLoading(true)
 
     try {
-      if (verifyAdmin(email, password)) {
-        setAdminSession()
+      const accessKey = searchParams.get('access')
+      
+      if (!accessKey) {
+        setError('訪問密鑰無效')
+        navigate('/', { replace: true })
+        return
+      }
+
+      const success = await loginAdmin(email, password, accessKey)
+      
+      if (success) {
         setEmail('')
         setPassword('')
         if (toast) {
@@ -49,13 +65,23 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
       }
     } catch (error) {
       console.error('登入失敗:', error)
-      setError('登入失敗')
+      setError(error.message || '登入失敗')
       if (toast) {
-        toast.error('登入失敗')
+        toast.error(error.message || '登入失敗')
       }
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (isCheckingAccess) {
+    return (
+      <div className="admin-login-page">
+        <div className="admin-login-container">
+          <p>驗證中...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
