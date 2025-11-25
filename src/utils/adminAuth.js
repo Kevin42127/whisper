@@ -1,5 +1,4 @@
 const ADMIN_SESSION_KEY = 'admin_session'
-const ADMIN_ACCESS_KEY = import.meta.env.VITE_ADMIN_ACCESS_KEY || 'default-secret-key-change-me'
 
 const API_BASE_URL = '/api/admin'
 
@@ -123,6 +122,3 @@ export async function isAdminLoggedIn() {
   }
 }
 
-export function getAccessKey() {
-  return ADMIN_ACCESS_KEY
-}
