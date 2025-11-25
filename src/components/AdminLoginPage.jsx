@@ -77,7 +77,8 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
         if (onLoginSuccess) {
           onLoginSuccess()
         }
-        window.location.href = '/admin/dashboard'
+        await new Promise(resolve => setTimeout(resolve, 100))
+        navigate('/admin/dashboard', { replace: true })
       } else {
         setError('帳號或密碼錯誤')
         if (toast) {
