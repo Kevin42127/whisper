@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import PostForm from './components/PostForm'
 import PostList from './components/PostList'
-import AdminLogin from './components/AdminLogin'
 import ToastContainer from './components/ToastContainer'
 import Announcement from './components/Announcement'
 import AnnouncementEditor from './components/AnnouncementEditor'
@@ -112,16 +111,6 @@ function App() {
           >
             <span className="material-icons">notifications</span>
           </button>
-          {!isMobile && (
-            <AdminLogin 
-              isLoggedIn={isAdmin} 
-              toast={toast} 
-              onShowAdmin={() => {
-                setActivePage('home')
-                setAdminPage('dashboard')
-              }}
-            />
-          )}
         </div>
       </header>
       {!adminPage && activePage === 'home' && (
