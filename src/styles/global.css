@@ -3465,6 +3465,124 @@ body {
   }
 }
 
+.admin-login-page {
+  width: 100%;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.admin-login-container {
+  width: 100%;
+  max-width: 400px;
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px var(--shadow);
+  padding: 2.5rem;
+}
+
+.admin-login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.admin-login-header .material-icons {
+  font-size: 3rem;
+  color: var(--brand-primary);
+  margin-bottom: 1rem;
+}
+
+.admin-login-header h2 {
+  font-size: 1.75rem;
+  color: var(--brand-primary);
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.admin-login-header p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-login-error {
+  background-color: #fee;
+  color: #c33;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.admin-login-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-login-form .form-label {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.admin-login-form .form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  transition: var(--transition);
+}
+
+.admin-login-form .form-input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  background-color: var(--bg-primary);
+}
+
+.admin-login-form .form-submit {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background-color: var(--brand-primary);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+  margin-top: 0.5rem;
+}
+
+.admin-login-form .form-submit:hover:not(:disabled) {
+  background-color: var(--brand-primary);
+  opacity: 0.9;
+}
+
+.admin-login-form .form-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-login-form .form-submit .material-icons {
+  font-size: 1.125rem;
+}
+
 .admin-dashboard-page {
   width: 100%;
 }
@@ -3480,6 +3598,33 @@ body {
   margin-bottom: 3rem;
   padding-bottom: 2rem;
   border-bottom: 2px solid var(--border-color);
+  position: relative;
+}
+
+.admin-logout-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.admin-logout-btn:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--brand-primary);
+}
+
+.admin-logout-btn .material-icons {
+  font-size: 1.125rem;
 }
 
 .admin-dashboard-title {
@@ -3687,92 +3832,4 @@ body {
   }
 }
 
-@media (max-width: 768px) {
-  .admin-dashboard-header {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-  }
-
-  .admin-dashboard-title h2 {
-    font-size: 1.75rem;
-  }
-
-  .admin-dashboard-title .material-icons {
-    font-size: 2rem;
-  }
-
-  .admin-dashboard-grid {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-
-  .admin-dashboard-card {
-    padding: 1.5rem;
-  }
-
-  .admin-dashboard-card-icon {
-    width: 56px;
-    height: 56px;
-  }
-
-  .admin-dashboard-card-icon .material-icons {
-    font-size: 1.75rem;
-  }
-
-  .admin-dashboard-card-content h3 {
-    font-size: 1.125rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .admin-dashboard-header {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.25rem;
-  }
-
-  .admin-dashboard-title {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .admin-dashboard-title h2 {
-    font-size: 1.5rem;
-  }
-
-  .admin-dashboard-subtitle {
-    font-size: 0.875rem;
-  }
-
-  .admin-dashboard-card {
-    padding: 1.25rem;
-  }
-
-  .admin-dashboard-card-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .admin-dashboard-card-icon .material-icons {
-    font-size: 1.5rem;
-  }
-
-  .admin-dashboard-card-content h3 {
-    font-size: 1rem;
-  }
-
-  .admin-dashboard-card-content p {
-    font-size: 0.875rem;
-  }
-
-  .admin-dashboard-btn span:not(.material-icons) {
-    display: none;
-  }
-
-  .admin-dashboard-btn {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    justify-content: center;
-  }
-}
 

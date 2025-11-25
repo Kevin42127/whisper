@@ -1,4 +1,6 @@
-function AdminDashboard({ onNavigate }) {
+import { useNavigate } from 'react-router-dom'
+
+function AdminDashboard({ onNavigate, onLogout }) {
   const menuItems = [
     {
       id: 'announcement',
@@ -31,6 +33,12 @@ function AdminDashboard({ onNavigate }) {
           <h2>管理後台</h2>
         </div>
         <p className="admin-dashboard-subtitle">選擇要管理的功能</p>
+        {onLogout && (
+          <button className="admin-logout-btn" onClick={onLogout} title="登出">
+            <span className="material-icons">logout</span>
+            <span>登出</span>
+          </button>
+        )}
       </div>
       
       <div className="admin-dashboard-grid">

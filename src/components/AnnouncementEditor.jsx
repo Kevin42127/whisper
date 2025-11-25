@@ -1,15 +1,49 @@
 import { useState, useEffect } from 'react'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../config/firebase'
+import { isAdminLoggedIn } from '../utils/adminAuth'
 
 function AnnouncementEditor({ toast, onClose }) {
   const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    loadAnnouncement()
+    const checkAdminStatus = () => {
+      setIsAdmin(isAdminLoggedIn())
+    }
+
+    checkAdminStatus()
+    const interval = setInterval(checkAdminStatus, 1000)
+
+    return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (!isAdmin) return
+
+    const loadAnnouncement = async () => {
+      setIsLoading(true)
+      try {
+        const docRef = doc(db, 'announcement', 'main')
+        const docSnap = await getDoc(docRef)
+        
+        if (docSnap.exists()) {
+          setContent(docSnap.data().content || '')
+        } else {
+          setContent('禁止詐騙、行銷等不當用途\n\n管理員會隨時查看並刪除違規內容')
+        }
+      } catch (error) {
+        console.error('載入公告失敗:', error)
+        toast.error('載入公告失敗')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadAnnouncement()
+  }, [isAdmin, toast])
 
   const handleClose = () => {
     if (onClose) {
@@ -17,26 +51,12 @@ function AnnouncementEditor({ toast, onClose }) {
     }
   }
 
-  const loadAnnouncement = async () => {
-    setIsLoading(true)
-    try {
-      const docRef = doc(db, 'announcement', 'main')
-      const docSnap = await getDoc(docRef)
-      
-      if (docSnap.exists()) {
-        setContent(docSnap.data().content || '')
-      } else {
-        setContent('禁止詐騙、行銷等不當用途\n\n管理員會隨時查看並刪除違規內容')
-      }
-    } catch (error) {
-      console.error('載入公告失敗:', error)
-      toast.error('載入公告失敗')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const handleSave = async () => {
+    if (!isAdmin) {
+      toast.error('僅限管理員使用')
+      return
+    }
+
     if (!content.trim()) {
       toast.error('公告內容不能為空')
       return
@@ -59,6 +79,20 @@ function AnnouncementEditor({ toast, onClose }) {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="announcement-editor-container">
+        <div className="guard-card">
+          <span className="material-icons">lock</span>
+          <p>僅限管理員使用</p>
+          <button className="cta-primary" onClick={onClose}>
+            返回後台
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (isLoading) {

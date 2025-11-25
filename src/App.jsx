@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import PostForm from './components/PostForm'
 import PostList from './components/PostList'
 import ToastContainer from './components/ToastContainer'
@@ -7,24 +8,29 @@ import AnnouncementEditor from './components/AnnouncementEditor'
 import ReportList from './components/ReportList'
 import PostManagement from './components/PostManagement'
 import AdminDashboard from './components/AdminDashboard'
+import AdminLoginPage from './components/AdminLoginPage'
+import AdminRoute from './components/AdminRoute'
 import SearchBar from './components/SearchBar'
 import UserSettings from './components/UserSettings'
 import AnonymousMatchPage from './components/AnonymousMatchPage'
 import ScrollProgress from './components/ScrollProgress'
 import useToast from './hooks/useToast'
-import { db, auth } from './config/firebase'
+import { db } from './config/firebase'
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
-import { onAuthStateChanged } from 'firebase/auth'
+import { isAdminLoggedIn, clearAdminSession } from './utils/adminAuth'
 
 function App() {
   const [posts, setPosts] = useState([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [showAnnouncement, setShowAnnouncement] = useState(false)
-  const [adminPage, setAdminPage] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [isMobile, setIsMobile] = useState(false)
-  const [activePage, setActivePage] = useState('home')
+  const navigate = useNavigate()
+  const location = useLocation()
   const toast = useToast()
+
+  const isAdminPath = location.pathname.startsWith('/admin')
+  const isMatchPath = location.pathname === '/match'
 
   useEffect(() => {
     const checkMobile = () => {
@@ -45,19 +51,30 @@ function App() {
   }, [])
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      const adminStatus = !!user
+    const checkAdminStatus = () => {
+      const adminStatus = isAdminLoggedIn()
       setIsAdmin(adminStatus)
-      if (adminStatus) {
-        setActivePage('home')
-        setAdminPage('dashboard')
-      } else {
-        setAdminPage(null)
-      }
-    })
+    }
 
-    return () => unsubscribeAuth()
+    checkAdminStatus()
+    const interval = setInterval(checkAdminStatus, 1000)
+
+    return () => clearInterval(interval)
   }, [])
+
+  const handleAdminLogout = () => {
+    clearAdminSession()
+    setIsAdmin(false)
+    navigate('/')
+    if (toast) {
+      toast.info('已登出管理員模式')
+    }
+  }
+
+  const handleAdminLoginSuccess = () => {
+    setIsAdmin(true)
+    navigate('/admin/dashboard')
+  }
 
   useEffect(() => {
     const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'))
@@ -80,90 +97,109 @@ function App() {
   }, [])
 
   return (
-    <div className={`app ${activePage === 'match' ? 'match-fullscreen' : ''}`}>
+    <div className={`app ${isMatchPath ? 'match-fullscreen' : ''}`}>
       <ScrollProgress />
-      <header className="app-header">
-        <div className="brand-block">
-          <h1 className="brand-logo">Whisper</h1>
-          <p className="app-subtitle">匿名發言，自由表達</p>
-        </div>
-        <div className="header-actions">
-          <button
-            className={`match-toggle ${activePage === 'match' ? 'active' : ''}`}
-            onClick={() => {
-              const nextPage = activePage === 'match' ? 'home' : 'match'
-              if (nextPage === 'match') {
-                setAdminPage(null)
-              }
-              setActivePage(nextPage)
-            }}
-          >
-            <span className="material-icons">
-              {activePage === 'match' ? 'home' : 'forum'}
-            </span>
-            {activePage === 'match' ? '返回首頁' : '匿名配對'}
-          </button>
-          <UserSettings />
-          <button 
-            className="announcement-bell" 
-            onClick={() => setShowAnnouncement(true)}
-            title="查看公告"
-          >
-            <span className="material-icons">notifications</span>
-          </button>
-        </div>
-      </header>
-      {!adminPage && activePage === 'home' && (
+      {!isAdminPath && (
+        <header className="app-header">
+          <div className="brand-block">
+            <h1 className="brand-logo">Whisper</h1>
+            <p className="app-subtitle">匿名發言，自由表達</p>
+          </div>
+          <div className="header-actions">
+            <button
+              className={`match-toggle ${isMatchPath ? 'active' : ''}`}
+              onClick={() => {
+                navigate(isMatchPath ? '/' : '/match')
+              }}
+            >
+              <span className="material-icons">
+                {isMatchPath ? 'home' : 'forum'}
+              </span>
+              {isMatchPath ? '返回首頁' : '匿名配對'}
+            </button>
+            <UserSettings />
+            <button 
+              className="announcement-bell" 
+              onClick={() => setShowAnnouncement(true)}
+              title="查看公告"
+            >
+              <span className="material-icons">notifications</span>
+            </button>
+          </div>
+        </header>
+      )}
+      {!isAdminPath && location.pathname === '/' && (
         <div className="search-section">
           <SearchBar onSearch={setSearchTerm} />
         </div>
       )}
       <main className="app-main">
-        {adminPage === 'dashboard' ? (
-          <AdminDashboardSection 
-            isAdmin={isAdmin} 
-            onNavigate={(page) => setAdminPage(page)} 
-            onClose={() => setAdminPage(null)}
-          />
-        ) : adminPage === 'announcement' ? (
-          <AnnouncementEditorSection 
-            toast={toast} 
-            onClose={() => setAdminPage('dashboard')} 
-          />
-        ) : adminPage === 'reports' ? (
-          <ReportsSection 
-            isAdmin={isAdmin} 
-            toast={toast} 
-            onClose={() => setAdminPage('dashboard')} 
-          />
-        ) : adminPage === 'posts' ? (
-          <PostManagementSection 
-            isAdmin={isAdmin} 
-            toast={toast} 
-            onClose={() => setAdminPage('dashboard')} 
-          />
-        ) : activePage === 'match' ? (
-          <AnonymousMatchPage
-            toast={toast}
-            onBack={() => setActivePage('home')}
-          />
-        ) : (
-          <HomeSection
-            posts={posts}
-            isAdmin={isAdmin}
-            toast={toast}
-            searchTerm={searchTerm}
-          />
-        )}
+        <Routes>
+          <Route path="/" element={
+            <HomeSection
+              posts={posts}
+              isAdmin={isAdmin}
+              toast={toast}
+              searchTerm={searchTerm}
+            />
+          } />
+          <Route path="/match" element={
+            <AnonymousMatchPage
+              toast={toast}
+              onBack={() => navigate('/')}
+            />
+          } />
+          <Route path="/admin/login" element={
+            <AdminLoginPage 
+              toast={toast} 
+              onLoginSuccess={handleAdminLoginSuccess}
+            />
+          } />
+          <Route path="/admin/dashboard" element={
+            <AdminRoute>
+              <AdminDashboardSection 
+                toast={toast}
+                onNavigate={(page) => navigate(`/admin/${page}`)}
+                onLogout={handleAdminLogout}
+              />
+            </AdminRoute>
+          } />
+          <Route path="/admin/announcement" element={
+            <AdminRoute>
+              <AnnouncementEditorSection 
+                toast={toast} 
+                onClose={() => navigate('/admin/dashboard')} 
+              />
+            </AdminRoute>
+          } />
+          <Route path="/admin/reports" element={
+            <AdminRoute>
+              <ReportsSection 
+                toast={toast} 
+                onClose={() => navigate('/admin/dashboard')} 
+              />
+            </AdminRoute>
+          } />
+          <Route path="/admin/posts" element={
+            <AdminRoute>
+              <PostManagementSection 
+                toast={toast} 
+                onClose={() => navigate('/admin/dashboard')} 
+              />
+            </AdminRoute>
+          } />
+        </Routes>
       </main>
       <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
       <Announcement isVisible={showAnnouncement} onClose={() => setShowAnnouncement(false)} />
-      <footer className="app-footer">
-        <div className="footer-content">
-          <p>© Whisper</p>
-        </div>
-      </footer>
-      {activePage !== 'match' && (
+      {!isAdminPath && (
+        <footer className="app-footer">
+          <div className="footer-content">
+            <p>© Whisper</p>
+          </div>
+        </footer>
+      )}
+      {!isMatchPath && !isAdminPath && (
         <a 
           href="https://forms.gle/eRY3UfV51Gh1523n6" 
           target="_blank" 
@@ -202,39 +238,15 @@ function HomeSection({ posts, isAdmin, toast, searchTerm }) {
   )
 }
 
-function AdminDashboardSection({ isAdmin, onNavigate, onClose }) {
-  if (!isAdmin) {
-    return (
-      <div className="guard-card">
-        <span className="material-icons">lock</span>
-        <p>僅限管理員使用</p>
-        <button className="cta-primary" onClick={onClose}>
-          返回首頁
-        </button>
-      </div>
-    )
-  }
-
+function AdminDashboardSection({ toast, onNavigate, onLogout }) {
   return (
     <section className="admin-dashboard-page">
-      <AdminDashboard onNavigate={onNavigate} />
+      <AdminDashboard onNavigate={onNavigate} onLogout={onLogout} />
     </section>
   )
 }
 
-function ReportsSection({ isAdmin, toast, onClose }) {
-  if (!isAdmin) {
-    return (
-      <div className="guard-card">
-        <span className="material-icons">lock</span>
-        <p>僅限管理員檢視檢舉記錄</p>
-        <button className="cta-primary" onClick={onClose}>
-          返回後台
-        </button>
-      </div>
-    )
-  }
-
+function ReportsSection({ toast, onClose }) {
   return (
     <section className="reports-page">
       <ReportList toast={toast} onBack={onClose} />
@@ -250,19 +262,7 @@ function AnnouncementEditorSection({ toast, onClose }) {
   )
 }
 
-function PostManagementSection({ isAdmin, toast, onClose }) {
-  if (!isAdmin) {
-    return (
-      <div className="guard-card">
-        <span className="material-icons">lock</span>
-        <p>僅限管理員使用</p>
-        <button className="cta-primary" onClick={onClose}>
-          返回後台
-        </button>
-      </div>
-    )
-  }
-
+function PostManagementSection({ toast, onClose }) {
   return (
     <section className="post-management-page">
       <PostManagement toast={toast} onBack={onClose} />
