@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { verifyAdmin, setAdminSession, isAdminLoggedIn } from '../utils/adminAuth'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { verifyAdmin, setAdminSession, isAdminLoggedIn, verifyAccessKey } from '../utils/adminAuth'
 
 function AdminLoginPage({ toast, onLoginSuccess }) {
   const [email, setEmail] = useState('')
@@ -8,12 +8,20 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     if (isAdminLoggedIn()) {
       navigate('/admin/dashboard', { replace: true })
+      return
     }
-  }, [navigate])
+
+    const accessKey = searchParams.get('access')
+    if (!accessKey || !verifyAccessKey(accessKey)) {
+      navigate('/', { replace: true })
+      return
+    }
+  }, [navigate, searchParams])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

@@ -1,5 +1,6 @@
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD
+const ADMIN_ACCESS_KEY = import.meta.env.VITE_ADMIN_ACCESS_KEY || 'default-secret-key-change-me'
 const ADMIN_SESSION_KEY = 'admin_session'
 
 export function verifyAdmin(email, password) {
@@ -26,5 +27,13 @@ export function clearAdminSession() {
 
 export function isAdminLoggedIn() {
   return !!getAdminSession()
+}
+
+export function verifyAccessKey(accessKey) {
+  return accessKey === ADMIN_ACCESS_KEY
+}
+
+export function getAccessKey() {
+  return ADMIN_ACCESS_KEY
 }
 
