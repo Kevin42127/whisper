@@ -54,7 +54,7 @@ function App() {
     const checkAdminStatus = async () => {
       const adminStatus = await isAdminLoggedIn()
       setIsAdmin(adminStatus)
-    }
+      }
 
     checkAdminStatus()
     const interval = setInterval(checkAdminStatus, 60000)
@@ -73,7 +73,6 @@ function App() {
 
   const handleAdminLoginSuccess = () => {
     setIsAdmin(true)
-    navigate('/admin/dashboard')
   }
 
   useEffect(() => {
@@ -100,12 +99,12 @@ function App() {
     <div className={`app ${isMatchPath ? 'match-fullscreen' : ''}`}>
       <ScrollProgress />
       {!isAdminPath && (
-        <header className="app-header">
-          <div className="brand-block">
-            <h1 className="brand-logo">Whisper</h1>
-            <p className="app-subtitle">匿名發言，自由表達</p>
-          </div>
-          <div className="header-actions">
+      <header className="app-header">
+        <div className="brand-block">
+          <h1 className="brand-logo">Whisper</h1>
+          <p className="app-subtitle">匿名發言，自由表達</p>
+        </div>
+        <div className="header-actions">
             <button
               className={`match-toggle ${isMatchPath ? 'active' : ''}`}
               onClick={() => {
@@ -117,16 +116,16 @@ function App() {
               </span>
               {isMatchPath ? '返回首頁' : '匿名配對'}
             </button>
-            <UserSettings />
-            <button 
-              className="announcement-bell" 
-              onClick={() => setShowAnnouncement(true)}
-              title="查看公告"
-            >
-              <span className="material-icons">notifications</span>
-            </button>
-          </div>
-        </header>
+          <UserSettings />
+          <button 
+            className="announcement-bell" 
+            onClick={() => setShowAnnouncement(true)}
+            title="查看公告"
+          >
+            <span className="material-icons">notifications</span>
+          </button>
+        </div>
+      </header>
       )}
       {!isAdminPath && location.pathname === '/' && (
         <div className="search-section">
@@ -136,12 +135,12 @@ function App() {
       <main className="app-main">
         <Routes>
           <Route path="/" element={
-            <HomeSection
-              posts={posts}
-              isAdmin={isAdmin}
-              toast={toast}
-              searchTerm={searchTerm}
-            />
+          <HomeSection
+            posts={posts}
+            isAdmin={isAdmin}
+            toast={toast}
+            searchTerm={searchTerm}
+          />
           } />
           <Route path="/match" element={
             <AnonymousMatchPage
@@ -193,22 +192,22 @@ function App() {
       <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
       <Announcement isVisible={showAnnouncement} onClose={() => setShowAnnouncement(false)} />
       {!isAdminPath && (
-        <footer className="app-footer">
-          <div className="footer-content">
-            <p>© Whisper</p>
-          </div>
-        </footer>
+      <footer className="app-footer">
+        <div className="footer-content">
+          <p>© Whisper</p>
+        </div>
+      </footer>
       )}
       {!isMatchPath && !isAdminPath && (
-        <a 
-          href="https://forms.gle/eRY3UfV51Gh1523n6" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="feedback-fab"
-          title="回饋表單"
-        >
-          <span className="material-icons">feedback</span>
-        </a>
+      <a 
+        href="https://forms.gle/eRY3UfV51Gh1523n6" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="feedback-fab"
+        title="回饋表單"
+      >
+        <span className="material-icons">feedback</span>
+      </a>
       )}
     </div>
   )
