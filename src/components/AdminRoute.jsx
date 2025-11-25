@@ -7,13 +7,9 @@ function AdminRoute({ children }) {
   const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const authenticated = await isAdminLoggedIn()
-      setIsAuthenticated(authenticated)
-      setIsChecking(false)
-    }
-
-    checkAuth()
+    const authenticated = isAdminLoggedIn()
+    setIsAuthenticated(authenticated)
+    setIsChecking(false)
   }, [])
 
   if (isChecking) {

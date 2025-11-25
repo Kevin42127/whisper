@@ -83,7 +83,7 @@ export function clearAdminSession() {
   localStorage.removeItem(ADMIN_SESSION_KEY)
 }
 
-export async function isAdminLoggedIn() {
+export function isAdminLoggedIn() {
   const session = getAdminSession()
   
   if (!session || !session.token) {
@@ -95,32 +95,6 @@ export async function isAdminLoggedIn() {
     return false
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/verify-session`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ sessionToken: session.token })
-    })
-
-    if (!response.ok) {
-      clearAdminSession()
-      return false
-    }
-
-    const data = await response.json()
-    
-    if (data.valid !== true) {
-      clearAdminSession()
-      return false
-    }
-
-    return true
-  } catch (error) {
-    console.error('驗證 session 失敗:', error)
-    clearAdminSession()
-    return false
-  }
+  return true
 }
 
