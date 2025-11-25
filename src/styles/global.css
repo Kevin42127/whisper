@@ -3481,6 +3481,39 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 24px var(--shadow);
   padding: 2.5rem;
+  position: relative;
+}
+
+.admin-login-back {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 10;
+}
+
+.admin-login-back:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+  border-color: var(--brand-primary);
+}
+
+.admin-login-back:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-login-back .material-icons {
+  font-size: 1.125rem;
 }
 
 .admin-login-header {

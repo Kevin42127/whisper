@@ -53,6 +53,14 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
   return (
     <div className="admin-login-page">
       <div className="admin-login-container">
+        <button 
+          className="admin-login-back"
+          onClick={() => navigate('/')}
+          disabled={isLoading}
+        >
+          <span className="material-icons">arrow_back</span>
+          <span>返回首頁</span>
+        </button>
         <div className="admin-login-header">
           <span className="material-icons">admin_panel_settings</span>
           <h2>管理員登入</h2>

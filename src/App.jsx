@@ -218,7 +218,7 @@ function HomeSection({ posts, isAdmin, toast, searchTerm }) {
     <>
       <div className="maintenance-banner">
         <span className="material-icons">campaign</span>
-        <p>目前發言卡片上限為12則，超過上限後會自動刷新顯示最新留言。</p>
+        <p>請不要未經授權就登入管理員後台。目前我已經隱藏後台登入及更改密碼。</p>
       </div>
       <section id="compose-form" className="compose-section">
         <div className="compose-card">
