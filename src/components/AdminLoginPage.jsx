@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { loginAdmin, isAdminLoggedIn, verifyAccessKey } from '../utils/adminAuth'
+import { loginAdmin, isAdminLoggedIn, verifyAccessKey, getAdminSession } from '../utils/adminAuth'
 
 function AdminLoginPage({ toast, onLoginSuccess }) {
   const [email, setEmail] = useState('')
@@ -25,6 +25,16 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
 
       const accessKey = searchParams.get('access')
       if (!accessKey) {
+        const session = getAdminSession()
+        if (session && session.token) {
+          await new Promise(resolve => setTimeout(resolve, 500))
+          const retryLoggedIn = await isAdminLoggedIn()
+          if (retryLoggedIn) {
+            setIsLoggedIn(true)
+            navigate('/admin/dashboard', { replace: true })
+            return
+          }
+        }
         navigate('/', { replace: true })
         return
       }
@@ -67,6 +77,7 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
         if (onLoginSuccess) {
           onLoginSuccess()
         }
+        await new Promise(resolve => setTimeout(resolve, 300))
         navigate('/admin/dashboard', { replace: true })
       } else {
         setError('帳號或密碼錯誤')
