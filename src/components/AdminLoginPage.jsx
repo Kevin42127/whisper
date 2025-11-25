@@ -8,18 +8,29 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingAccess, setIsCheckingAccess] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
+    if (isLoggedIn) return
+
     const checkAccess = async () => {
-      if (await isAdminLoggedIn()) {
+      const loggedIn = await isAdminLoggedIn()
+      if (loggedIn) {
+        setIsLoggedIn(true)
         navigate('/admin/dashboard', { replace: true })
         return
       }
 
       const accessKey = searchParams.get('access')
-      if (!accessKey || !(await verifyAccessKey(accessKey))) {
+      if (!accessKey) {
+        navigate('/', { replace: true })
+        return
+      }
+
+      const isValidAccess = await verifyAccessKey(accessKey)
+      if (!isValidAccess) {
         navigate('/', { replace: true })
         return
       }
@@ -28,7 +39,7 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
     }
 
     checkAccess()
-  }, [navigate, searchParams])
+  }, [navigate, searchParams, isLoggedIn])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -49,14 +60,21 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
       if (success) {
         setEmail('')
         setPassword('')
+        setIsLoggedIn(true)
         if (toast) {
           toast.success('管理員登入成功')
         }
         if (onLoginSuccess) {
           onLoginSuccess()
         }
-        await new Promise(resolve => setTimeout(resolve, 100))
-        navigate('/admin/dashboard', { replace: true })
+        
+        const verifyLogin = await isAdminLoggedIn()
+        if (verifyLogin) {
+          navigate('/admin/dashboard', { replace: true })
+        } else {
+          setError('登入驗證失敗，請稍後再試')
+          setIsLoggedIn(false)
+        }
       } else {
         setError('帳號或密碼錯誤')
         if (toast) {
