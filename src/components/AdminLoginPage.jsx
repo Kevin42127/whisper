@@ -67,14 +67,7 @@ function AdminLoginPage({ toast, onLoginSuccess }) {
         if (onLoginSuccess) {
           onLoginSuccess()
         }
-        
-        const verifyLogin = await isAdminLoggedIn()
-        if (verifyLogin) {
-          navigate('/admin/dashboard', { replace: true })
-        } else {
-          setError('登入驗證失敗，請稍後再試')
-          setIsLoggedIn(false)
-        }
+        navigate('/admin/dashboard', { replace: true })
       } else {
         setError('帳號或密碼錯誤')
         if (toast) {
