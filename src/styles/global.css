@@ -363,10 +363,35 @@ body {
 
 .form-group {
   margin-bottom: 1.5rem;
+  position: relative;
 }
 
 .form-group:last-of-type {
   margin-bottom: 1rem;
+}
+
+.form-char-count {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.form-char-count > span:first-child {
+  margin-left: auto;
+}
+
+.form-char-count .char-count-warning {
+  color: var(--brand-accent);
+  font-weight: 500;
+}
+
+.post-interval-warning {
+  color: var(--brand-primary);
+  font-weight: 500;
+  margin-right: 0.5rem;
 }
 
 .form-input,
