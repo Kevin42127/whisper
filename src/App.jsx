@@ -81,7 +81,7 @@ function App() {
   }, [])
 
   return (
-    <div className="app">
+    <div className={`app ${activePage === 'match' ? 'match-fullscreen' : ''}`}>
       <ScrollProgress />
       <header className="app-header">
         <div className="brand-block">
@@ -174,15 +174,17 @@ function App() {
           <p>© Whisper</p>
         </div>
       </footer>
-      <a 
-        href="https://forms.gle/eRY3UfV51Gh1523n6" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="feedback-fab"
-        title="回饋表單"
-      >
-        <span className="material-icons">feedback</span>
-      </a>
+      {activePage !== 'match' && (
+        <a 
+          href="https://forms.gle/eRY3UfV51Gh1523n6" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="feedback-fab"
+          title="回饋表單"
+        >
+          <span className="material-icons">feedback</span>
+        </a>
+      )}
     </div>
   )
 }

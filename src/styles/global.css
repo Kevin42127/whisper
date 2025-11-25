@@ -53,6 +53,49 @@ body {
   padding: 2rem 1rem;
 }
 
+@media (min-width: 1025px) {
+  .app.match-fullscreen {
+    max-width: 100%;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .app.match-fullscreen .app-header {
+    padding: 1rem 2rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .app.match-fullscreen .app-header .brand-block {
+    display: none;
+  }
+
+  .app.match-fullscreen .app-header .header-actions {
+    position: static;
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .app.match-fullscreen .app-footer,
+  .app.match-fullscreen .search-section {
+    display: none;
+  }
+
+  .app.match-fullscreen .app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+  }
+}
+
 .scroll-progress {
   position: fixed;
   top: 0;
@@ -397,6 +440,14 @@ body {
 
 .post-list-empty p {
   font-size: 1.125rem;
+}
+
+.post-list-info {
+  text-align: center;
+  padding: 2rem 1rem;
+  margin-top: 2rem;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
 }
 
 .post-item {
@@ -1870,6 +1921,45 @@ body {
   gap: 2rem;
 }
 
+@media (min-width: 1025px) {
+  .app.match-fullscreen .match-page {
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+    height: 100%;
+    gap: 0;
+  }
+
+  .app.match-fullscreen .match-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    flex-shrink: 0;
+  }
+
+  .app.match-fullscreen .match-content {
+    flex: 1;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .app.match-fullscreen .match-panel {
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid var(--border-color);
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .app.match-fullscreen .match-panel.chat {
+    border-right: none;
+  }
+}
+
 .match-header {
   display: flex;
   align-items: center;
@@ -2032,10 +2122,14 @@ body {
 
 .chat-bubble {
   padding: 0.75rem 1rem;
-  border-radius: 16px;
-  max-width: 70%;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  border-radius: 18px;
+  max-width: 60%;
+  min-width: auto;
+  width: fit-content;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  box-sizing: border-box;
+  border: 1px solid transparent;
 }
 
 .chat-bubble.mine {
@@ -2043,6 +2137,7 @@ body {
   color: #ffffff;
   margin-left: auto;
   border-top-right-radius: 4px;
+  border-color: transparent;
 }
 
 .chat-bubble.partner {
@@ -2050,6 +2145,42 @@ body {
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   border-top-left-radius: 4px;
+}
+
+.chat-welcome {
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chat-welcome .material-icons {
+  font-size: 2rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.chat-welcome div {
+  flex: 1;
+}
+
+.chat-welcome p {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.chat-welcome small {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  opacity: 0.95;
 }
 
 .chat-empty {
@@ -2126,6 +2257,10 @@ body {
   }
 
   .match-panel.queue {
+    order: 1;
+  }
+
+  .match-panel.chat {
     order: 2;
   }
 
@@ -2161,6 +2296,14 @@ body {
     gap: 1rem;
   }
 
+  .chat-bubble {
+    max-width: 80%;
+    min-width: auto;
+    width: fit-content;
+    font-size: 0.9375rem;
+    padding: 0.75rem 0.875rem;
+  }
+
   .match-panel .panel-heading {
     padding: 1rem 1.25rem;
   }
@@ -2192,6 +2335,10 @@ body {
   }
 
   .match-panel.queue {
+    order: 1;
+  }
+
+  .match-panel.chat {
     order: 2;
   }
 }
@@ -2219,6 +2366,14 @@ body {
 
   .match-content {
     gap: 1rem;
+  }
+
+  .chat-bubble {
+    max-width: 80%;
+    min-width: auto;
+    width: fit-content;
+    font-size: 0.9375rem;
+    padding: 0.75rem 0.875rem;
   }
 }
 

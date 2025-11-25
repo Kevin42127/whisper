@@ -56,7 +56,7 @@ function PostList({ posts, isAdmin, toast, searchTerm = '' }) {
       )}
       {!hasSearch && posts.length > MAX_POSTS && (
         <div className="post-list-info">
-          <p>顯示最新 {MAX_POSTS} 則留言（共 {posts.length} 則）</p>
+          <p>顯示最新 {MAX_POSTS} 則留言</p>
         </div>
       )}
     </>

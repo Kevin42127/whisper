@@ -22,6 +22,9 @@ function AnonymousMatchPage({ toast, onBack }) {
   const [isLeaving, setIsLeaving] = useState(false)
   const matchSoundPlayedRef = useRef(false)
   const audioRef = useRef(null)
+  const lastSeenMessageTimeRef = useRef(null)
+  const originalTitleRef = useRef(null)
+  const isPageVisibleRef = useRef(true)
 
   const isWaiting = ticket.status === 'waiting' && !ticket.roomId
   const isMatched = ticket.status === 'matched' && !!ticket.roomId
@@ -35,6 +38,17 @@ function AnonymousMatchPage({ toast, onBack }) {
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current = null
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!originalTitleRef.current) {
+      originalTitleRef.current = document.title
+    }
+    return () => {
+      if (originalTitleRef.current) {
+        document.title = originalTitleRef.current
       }
     }
   }, [])
@@ -55,6 +69,10 @@ function AnonymousMatchPage({ toast, onBack }) {
     if (!ticket.roomId) {
       setRoom(null)
       setMessages([])
+      lastSeenMessageTimeRef.current = null
+      if (originalTitleRef.current) {
+        document.title = originalTitleRef.current
+      }
       return
     }
     const stopRoom = listenRoom(ticket.roomId, setRoom)
@@ -73,12 +91,73 @@ function AnonymousMatchPage({ toast, onBack }) {
           console.warn('播放配對提示音失敗', error)
         })
       }
+      toast.success('配對成功！主動打招呼可以讓聊天更順利')
       matchSoundPlayedRef.current = true
     }
     if (!isMatched) {
       matchSoundPlayedRef.current = false
     }
-  }, [isMatched, partnerLeft])
+  }, [isMatched, partnerLeft, toast])
+
+  useEffect(() => {
+    if (!originalTitleRef.current) {
+      originalTitleRef.current = document.title
+    }
+
+    const updateTitle = () => {
+      if (!isMatched || partnerLeft || !sessionId || messages.length === 0) {
+        document.title = originalTitleRef.current || 'Whisper'
+        return
+      }
+
+      const partnerMessages = messages.filter(msg => msg.sender !== sessionId)
+      if (partnerMessages.length === 0) {
+        document.title = originalTitleRef.current || 'Whisper'
+        return
+      }
+
+      const lastMessage = partnerMessages[partnerMessages.length - 1]
+      const lastMessageTime = lastMessage?.createdAt?.toMillis()
+
+      if (isPageVisibleRef.current) {
+        if (lastMessageTime) {
+          lastSeenMessageTimeRef.current = lastMessageTime
+        }
+        document.title = originalTitleRef.current || 'Whisper'
+      } else {
+        let unreadCount = 0
+        if (lastSeenMessageTimeRef.current && lastMessageTime) {
+          unreadCount = partnerMessages.filter(msg => {
+            const msgTime = msg.createdAt?.toMillis()
+            return msgTime && msgTime > lastSeenMessageTimeRef.current
+          }).length
+        } else if (lastMessageTime) {
+          unreadCount = partnerMessages.length
+          lastSeenMessageTimeRef.current = lastMessageTime
+        }
+
+        if (unreadCount > 0) {
+          document.title = `(${unreadCount}) ${originalTitleRef.current || 'Whisper'}`
+        } else {
+          document.title = originalTitleRef.current || 'Whisper'
+        }
+      }
+    }
+
+    updateTitle()
+
+    const handleVisibilityChange = () => {
+      isPageVisibleRef.current = !document.hidden
+      updateTitle()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      document.title = originalTitleRef.current || 'Whisper'
+    }
+  }, [messages, isMatched, partnerLeft, sessionId])
 
   const stateTitle = useMemo(() => {
     if (isMatched) {
@@ -136,6 +215,22 @@ function AnonymousMatchPage({ toast, onBack }) {
       toast.warning('聊天室禁止貼上連結')
       return
     }
+    const scamKeywords = [
+      'line.me', 'line id', 'line id:', 'line：', 'line:', '加line', '加 line',
+      'telegram', 'tg', 'tg:', 'tg：',
+      '加我', '私訊', '私聊', '私我', '密我', 'pm我',
+      '投資', '賺錢', '獲利', '高報酬', '穩賺',
+      '兼職', '在家工作', '輕鬆賺',
+      '貸款', '借貸', '信用',
+      '點擊', '點我', '點這裡'
+    ]
+    const hasScamKeyword = scamKeywords.some(keyword => 
+      message.toLowerCase().includes(keyword.toLowerCase())
+    )
+    if (hasScamKeyword) {
+      toast.warning('內容包含不允許的關鍵字')
+      return
+    }
     setIsSending(true)
     try {
       await sendRoomMessage(ticket.roomId, sessionId, message)
@@ -167,10 +262,19 @@ function AnonymousMatchPage({ toast, onBack }) {
   const renderMessages = () => {
     if (!messages.length) {
       return (
-        <div className="chat-empty">
-          <span className="material-icons">chat</span>
-          <p>聊聊今天的心情吧</p>
-        </div>
+        <>
+          <div className="chat-welcome">
+            <span className="material-icons">celebration</span>
+            <div>
+              <p>配對成功！</p>
+              <small>主動打招呼可以讓聊天更順利，試試說「你好！」或「今天過得如何？」</small>
+            </div>
+          </div>
+          <div className="chat-empty">
+            <span className="material-icons">chat</span>
+            <p>聊聊今天的心情吧</p>
+          </div>
+        </>
       )
     }
     return messages.map((msg) => {

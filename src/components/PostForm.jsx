@@ -13,6 +13,29 @@ function PostForm({ toast, isAdmin }) {
       return
     }
 
+    const hasLink = /(https?:\/\/|www\.)/i.test(content)
+    if (hasLink) {
+      toast.warning('禁止貼上連結')
+      return
+    }
+
+    const scamKeywords = [
+      'line.me', 'line id', 'line id:', 'line：', 'line:', '加line', '加 line',
+      'telegram', 'tg', 'tg:', 'tg：',
+      '加我', '私訊', '私聊', '私我', '密我', 'pm我',
+      '投資', '賺錢', '獲利', '高報酬', '穩賺',
+      '兼職', '在家工作', '輕鬆賺',
+      '貸款', '借貸', '信用',
+      '點擊', '點我', '點這裡'
+    ]
+    const hasScamKeyword = scamKeywords.some(keyword => 
+      content.toLowerCase().includes(keyword.toLowerCase())
+    )
+    if (hasScamKeyword) {
+      toast.warning('內容包含不允許的關鍵字')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
