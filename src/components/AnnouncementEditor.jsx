@@ -23,22 +23,22 @@ function AnnouncementEditor({ toast, onClose }) {
   useEffect(() => {
     if (!isAdmin) return
 
-    const loadAnnouncement = async () => {
-      setIsLoading(true)
-      try {
-        const docRef = doc(db, 'announcement', 'main')
-        const docSnap = await getDoc(docRef)
-        
-        if (docSnap.exists()) {
-          setContent(docSnap.data().content || '')
-        } else {
-          setContent('禁止詐騙、行銷等不當用途\n\n管理員會隨時查看並刪除違規內容')
-        }
-      } catch (error) {
-        console.error('載入公告失敗:', error)
-        toast.error('載入公告失敗')
-      } finally {
-        setIsLoading(false)
+  const loadAnnouncement = async () => {
+    setIsLoading(true)
+    try {
+      const docRef = doc(db, 'announcement', 'main')
+      const docSnap = await getDoc(docRef)
+      
+      if (docSnap.exists()) {
+        setContent(docSnap.data().content || '')
+      } else {
+        setContent('禁止詐騙、行銷等不當用途\n\n管理員會隨時查看並刪除違規內容')
+      }
+    } catch (error) {
+      console.error('載入公告失敗:', error)
+      toast.error('載入公告失敗')
+    } finally {
+      setIsLoading(false)
       }
     }
 
