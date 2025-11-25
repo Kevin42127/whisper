@@ -218,7 +218,7 @@ function HomeSection({ posts, isAdmin, toast, searchTerm }) {
     <>
       <div className="maintenance-banner">
         <span className="material-icons">campaign</span>
-        <p>請不要未經授權就登入管理員後台。目前我已經隱藏後台登入及更改密碼。</p>
+        <p>為了維護網站安全與使用者權益，請不要嘗試未經授權的登入行為。感謝大家的配合與理解。</p>
       </div>
       <section id="compose-form" className="compose-section">
         <div className="compose-card">
