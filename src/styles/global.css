@@ -2285,7 +2285,7 @@ body.theme-dark .cta-secondary:hover {
   letter-spacing: 0.05em;
   border: none;
   background: none;
-  color: #ffffff;
+  color: #000000;
   padding: 0;
   text-transform: none;
   font-size: 1rem;
@@ -2293,6 +2293,10 @@ body.theme-dark .cta-secondary:hover {
 
 .mobile-exit-button .material-icons {
   font-size: 1.25rem;
+}
+
+body.theme-dark .mobile-exit-button {
+  color: #ffffff;
 }
 
 .match-panel {

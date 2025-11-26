@@ -261,7 +261,14 @@ const stateTitle = useMemo(() => {
   const handleSendMessage = async (event) => {
     event.preventDefault()
     const message = input.trim()
-    if (!message || !ticket.roomId || partnerLeft) {
+    if (!message) {
+      return
+    }
+    if (!ticket.roomId) {
+      toast.info('請等待配對成功後再發送訊息')
+      return
+    }
+    if (partnerLeft) {
       return
     }
     const hasLink = /(https?:\/\/|www\.)/i.test(message)
@@ -512,7 +519,7 @@ const stateTitle = useMemo(() => {
               ref={inputRef}
               rows={1}
               placeholder={
-                canChat ? '輸入訊息...' : partnerLeft ? '對方已離開' : '等待配對中'
+                canChat ? '輸入訊息...' : partnerLeft ? '對方已離開' : '配對成功後即可發送訊息...'
               }
               value={input}
               onChange={(e) => {
@@ -527,7 +534,7 @@ const stateTitle = useMemo(() => {
                   handleSendMessage(e)
                 }
               }}
-              disabled={!canChat || isSending}
+              disabled={partnerLeft || isSending}
             />
             <div className="chat-actions">
               <div className="emoji-wrapper">
@@ -535,7 +542,7 @@ const stateTitle = useMemo(() => {
                   type="button"
                   className="emoji-button"
                   onClick={() => setShowEmoji((prev) => !prev)}
-                  disabled={!canChat || isSending}
+                  disabled={partnerLeft || isSending}
                   aria-label="插入表情"
                 >
                   <span className="material-icons">sentiment_satisfied_alt</span>
@@ -549,7 +556,7 @@ const stateTitle = useMemo(() => {
                   </>
                 )}
               </div>
-              <button type="submit" disabled={!canChat || !input.trim() || isSending}>
+              <button type="submit" disabled={!input.trim() || isSending}>
                 <span className="material-icons">send</span>
               </button>
             </div>
