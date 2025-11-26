@@ -1,271 +1,160 @@
-import { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import PostForm from './components/PostForm'
-import PostList from './components/PostList'
+import { useEffect, useState } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import ToastContainer from './components/ToastContainer'
-import Announcement from './components/Announcement'
-import AnnouncementEditor from './components/AnnouncementEditor'
-import ReportList from './components/ReportList'
-import PostManagement from './components/PostManagement'
-import AdminDashboard from './components/AdminDashboard'
-import AdminLoginPage from './components/AdminLoginPage'
-import AdminRoute from './components/AdminRoute'
-import SearchBar from './components/SearchBar'
-import UserSettings from './components/UserSettings'
 import AnonymousMatchPage from './components/AnonymousMatchPage'
 import ScrollProgress from './components/ScrollProgress'
 import useToast from './hooks/useToast'
-import { db } from './config/firebase'
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore'
-import { isAdminLoggedIn, clearAdminSession } from './utils/adminAuth'
 
 function App() {
-  const [posts, setPosts] = useState([])
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [showAnnouncement, setShowAnnouncement] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isMobile, setIsMobile] = useState(false)
-  const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
+  const [showAnnouncement, setShowAnnouncement] = useState(false)
+  const [theme, setTheme] = useState('light')
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640)
 
-  const isAdminPath = location.pathname.startsWith('/admin')
-  const isMatchPath = location.pathname === '/match'
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 640)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  const isMatchPath = location.pathname === '/'
 
   useEffect(() => {
-    const hasSeenAnnouncement = localStorage.getItem('hasSeenAnnouncement')
-    if (!hasSeenAnnouncement) {
+    const hasSeen = localStorage.getItem('matchFocusAnnouncement')
+    if (!hasSeen) {
       setShowAnnouncement(true)
     }
   }, [])
 
   useEffect(() => {
-    const checkAdminStatus = () => {
-      const adminStatus = isAdminLoggedIn()
-      setIsAdmin(adminStatus)
+    const storedTheme = localStorage.getItem('whisperTheme')
+    if (storedTheme === 'dark') {
+      setTheme('dark')
+      document.body.classList.add('theme-dark')
     }
-
-    checkAdminStatus()
-    const interval = setInterval(checkAdminStatus, 60000)
-
-    return () => clearInterval(interval)
   }, [])
-
-  const handleAdminLogout = () => {
-    clearAdminSession()
-    setIsAdmin(false)
-    navigate('/')
-    if (toast) {
-      toast.info('已登出管理員模式')
-    }
-  }
-
-  const handleAdminLoginSuccess = () => {
-    setIsAdmin(true)
-  }
 
   useEffect(() => {
-    const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'))
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const postsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      const sortedPosts = postsData.sort((a, b) => {
-        const aPinned = a.pinned || false
-        const bPinned = b.pinned || false
-        if (aPinned && !bPinned) return -1
-        if (!aPinned && bPinned) return 1
-        return 0
-      })
-      setPosts(sortedPosts)
-    })
+    if (theme === 'dark') {
+      document.body.classList.add('theme-dark')
+    } else {
+      document.body.classList.remove('theme-dark')
+    }
+    localStorage.setItem('whisperTheme', theme)
+  }, [theme])
 
-    return () => unsubscribe()
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 640)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  const handleAnnouncementClose = () => {
+    localStorage.setItem('matchFocusAnnouncement', 'true')
+    setShowAnnouncement(false)
+  }
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+  }
 
   return (
     <div className={`app ${isMatchPath ? 'match-fullscreen' : ''}`}>
       <ScrollProgress />
-      {!isAdminPath && (
-      <header className="app-header">
+      <header className="app-header color-splash tone-coral">
         <div className="brand-block">
           <h1 className="brand-logo">Whisper</h1>
-          <p className="app-subtitle">匿名發言，自由表達</p>
+          <p className="app-subtitle">專注匿名配對，發言功能暫停中</p>
         </div>
         <div className="header-actions">
-            <button
-              className={`match-toggle ${isMatchPath ? 'active' : ''}`}
-              onClick={() => {
-                navigate(isMatchPath ? '/' : '/match')
-              }}
-            >
-              <span className="material-icons">
-                {isMatchPath ? 'home' : 'forum'}
-              </span>
-              {isMatchPath ? '返回首頁' : '匿名配對'}
-            </button>
-          <UserSettings />
-          <button 
-            className="announcement-bell" 
+          <a
+            className="icon-button"
+            href="https://forms.gle/yPtzgs3oxqAUgZZT8"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="回饋表單"
+          >
+            <span className="material-icons">feedback</span>
+          </a>
+          <button
+            className="icon-button"
+            onClick={toggleTheme}
+            aria-label="切換深淺模式"
+            title="切換深淺模式"
+          >
+            <span className="material-icons">{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
+          </button>
+          <button
+            className="announcement-toggle"
             onClick={() => setShowAnnouncement(true)}
             title="查看公告"
           >
-            <span className="material-icons">notifications</span>
+            <span className="material-icons">campaign</span>
+            {!isMobile && '查看公告'}
           </button>
         </div>
       </header>
-      )}
-      {!isAdminPath && location.pathname === '/' && (
-        <div className="search-section">
-          <SearchBar onSearch={setSearchTerm} />
-        </div>
-      )}
       <main className="app-main">
         <Routes>
           <Route path="/" element={
-          <HomeSection
-            posts={posts}
-            isAdmin={isAdmin}
-            toast={toast}
-            searchTerm={searchTerm}
-          />
-          } />
-          <Route path="/match" element={
             <AnonymousMatchPage
               toast={toast}
-              onBack={() => navigate('/')}
             />
           } />
-          <Route path="/admin/login" element={
-            <AdminLoginPage 
-              toast={toast} 
-              onLoginSuccess={handleAdminLoginSuccess}
-            />
-          } />
-          <Route path="/admin/dashboard" element={
-            <AdminRoute>
-              <AdminDashboardSection 
-                toast={toast}
-                onNavigate={(page) => navigate(`/admin/${page}`)}
-                onLogout={handleAdminLogout}
-              />
-            </AdminRoute>
-          } />
-          <Route path="/admin/announcement" element={
-            <AdminRoute>
-              <AnnouncementEditorSection 
-                toast={toast} 
-                onClose={() => navigate('/admin/dashboard')} 
-              />
-            </AdminRoute>
-          } />
-          <Route path="/admin/reports" element={
-            <AdminRoute>
-              <ReportsSection 
-                toast={toast} 
-                onClose={() => navigate('/admin/dashboard')} 
-              />
-            </AdminRoute>
-          } />
-          <Route path="/admin/posts" element={
-            <AdminRoute>
-              <PostManagementSection 
-                toast={toast} 
-                onClose={() => navigate('/admin/dashboard')} 
-              />
-            </AdminRoute>
-          } />
+          <Route path="/match" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <ToastContainer toasts={toast.toasts} removeToast={toast.removeToast} />
-      <Announcement isVisible={showAnnouncement} onClose={() => setShowAnnouncement(false)} />
-      {!isAdminPath && (
-      <footer className="app-footer">
+      <footer className="app-footer color-splash tone-mint">
         <div className="footer-content">
           <p>© Whisper</p>
         </div>
       </footer>
+      {!isMatchPath && (
+        <a 
+          href="https://forms.gle/yPtzgs3oxqAUgZZT8" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="feedback-fab"
+          title="回饋表單"
+        >
+          <span className="material-icons">feedback</span>
+        </a>
       )}
-      {!isMatchPath && !isAdminPath && (
-      <a 
-        href="https://forms.gle/eRY3UfV51Gh1523n6" 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="feedback-fab"
-        title="回饋表單"
-      >
-        <span className="material-icons">feedback</span>
-      </a>
+      {showAnnouncement && (
+        <ServiceAnnouncement onClose={handleAnnouncementClose} />
       )}
     </div>
   )
 }
-function HomeSection({ posts, isAdmin, toast, searchTerm }) {
+
+function ServiceAnnouncement({ onClose }) {
   return (
-    <>
-      <div className="maintenance-banner">
-        <span className="material-icons">campaign</span>
-        <p>為了維護網站安全與使用者權益，請不要嘗試未經授權的登入行為。感謝大家的配合與理解。</p>
-      </div>
-      <section id="compose-form" className="compose-section">
-        <div className="compose-card">
-          {isAdmin && (
-            <div className="compose-note">
-              <span className="material-icons">info</span>
-              管理員發文依然保持匿名，但請謹慎使用。
-            </div>
-          )}
-          <PostForm toast={toast} isAdmin={isAdmin} />
+    <div className="announcement-overlay">
+      <div className="announcement-modal">
+        <div className="announcement-header">
+          <h3>服務公告</h3>
+          <button className="announcement-close" onClick={onClose}>
+            <span className="material-icons">close</span>
+          </button>
         </div>
-      </section>
-      <section id="latest-posts" className="posts-preview">
-        <PostList posts={posts} isAdmin={isAdmin} toast={toast} searchTerm={searchTerm} />
-      </section>
-    </>
-  )
-}
-
-function AdminDashboardSection({ toast, onNavigate, onLogout }) {
-  return (
-    <section className="admin-dashboard-page">
-      <AdminDashboard onNavigate={onNavigate} onLogout={onLogout} />
-    </section>
-  )
-}
-
-function ReportsSection({ toast, onClose }) {
-  return (
-    <section className="reports-page">
-      <ReportList toast={toast} onBack={onClose} />
-    </section>
-  )
-}
-
-function AnnouncementEditorSection({ toast, onClose }) {
-  return (
-    <section className="announcement-editor-page">
-      <AnnouncementEditor toast={toast} onClose={onClose} />
-    </section>
-  )
-}
-
-function PostManagementSection({ toast, onClose }) {
-  return (
-    <section className="post-management-page">
-      <PostManagement toast={toast} onBack={onClose} />
-    </section>
+        <div className="announcement-content">
+          <div className="announcement-icon">
+            <span className="material-icons">campaign</span>
+          </div>
+          <p>
+            目前暫停「匿名發言」功能，<br />
+            集中資源優化匿名配對與聊天室體驗。
+          </p>
+          <p>
+            發言功能將在完成優化後再開放，<br />
+            歡迎先體驗配對功能或透過回饋表單提供建議。
+          </p>
+        </div>
+        <div className="announcement-footer">
+          <button className="announcement-button" onClick={onClose}>
+            我知道了
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

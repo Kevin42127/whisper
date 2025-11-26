@@ -4,11 +4,13 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
   runTransaction,
   serverTimestamp,
+  setDoc,
   updateDoc
 } from 'firebase/firestore'
 
@@ -121,12 +123,14 @@ export function listenMatchTicket(sessionId, handler) {
     return () => {}
   }
   const ticketRef = doc(db, TICKETS, sessionId)
-  return onSnapshot(ticketRef, (snapshot) => {
+  return onSnapshot(ticketRef, async (snapshot) => {
     if (!snapshot.exists()) {
-      handler({ status: 'idle', roomId: null })
+      const queueSnap = await getDoc(queueRef).catch(() => null)
+      handler({ status: 'idle', roomId: null }, queueSnap?.data() || {})
       return
     }
-    handler(snapshot.data())
+    const queueSnap = await getDoc(queueRef).catch(() => null)
+    handler(snapshot.data(), queueSnap?.data() || {})
   })
 }
 
@@ -171,6 +175,35 @@ export async function sendRoomMessage(roomId, sessionId, content) {
   })
   await updateDoc(doc(db, ROOMS, roomId), {
     lastMessageAt: serverTimestamp()
+  })
+}
+
+export async function setTypingStatus(roomId, sessionId, isTyping) {
+  if (!roomId || !sessionId) {
+    return
+  }
+  const typingRef = doc(db, ROOMS, roomId, 'typing', sessionId)
+  if (isTyping) {
+    await setDoc(typingRef, {
+      isTyping: true,
+      updatedAt: serverTimestamp()
+    })
+  } else {
+    await deleteDoc(typingRef).catch(() => {})
+  }
+}
+
+export function listenTypingStatus(roomId, handler) {
+  if (!roomId) {
+    return () => {}
+  }
+  const typingRef = collection(db, ROOMS, roomId, 'typing')
+  return onSnapshot(typingRef, (snapshot) => {
+    const typingUsers = {}
+    snapshot.forEach((docItem) => {
+      typingUsers[docItem.id] = docItem.data().isTyping
+    })
+    handler(typingUsers)
   })
 }
 
